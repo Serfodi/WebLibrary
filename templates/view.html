@@ -1,0 +1,27 @@
+<!-- templates/dynamic_table.html -->
+{% extends "base.html" %}
+{% block title %} Просмотр записей {% endblock %}
+{% block content %}
+{% if error %}
+<div class="error"> {{ error }} </div>
+{% else %}
+<table>
+    <thead>
+        <tr>
+            {% for column in session.get('columns') %}
+            <th> {{ column }} </th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            {% for value in row %}
+            <td> {{value}} </td>
+            {% endfor %}            
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

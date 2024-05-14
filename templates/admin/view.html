@@ -1,0 +1,131 @@
+<!-- templates/dynamic_table.html -->
+{% extends "base.html" %}
+{% block title %} Просмотр записей {% endblock %}
+{% block content %}
+<style>
+.change-icon {
+    cursor: pointer;
+    color: green;
+}
+.delete-icon {
+    cursor: pointer;
+    color: red;
+}
+table tbody tr:last-child {
+    background-color: #E0D1C1;
+}
+table tbody tr td:nth-last-child(-n + 2) {
+    border-radius: 0 15px 15px 0;
+}
+table tbody tr td:last-child {
+    white-space: nowrap;
+    width: 1%;
+	border-radius: 0 15px 15px 0;
+    background: #F2EAE0;
+    padding: 6px; 
+}
+</style>
+{% if error %}
+<div class="error">
+    <span> {{ error }} </span>
+</div>
+{% else %}
+<table>
+    <thead>
+        <tr>
+            {% for column in session.get('columns') %}
+            <th>{{column}}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(0, data|length) %}
+        <tr data-row-id="{{ data[i][0] }}">
+
+            {% for j in range(0, data[i]|length) %}
+            <td data-row-id="{{ j }}">
+                {% if session.get('table-UPDATE') %}      
+                <form onsubmit = "confirmUpdate(this); return false">
+                    <input name="input1" value="{{data[i][j]}}">
+                </form>
+                {% else %}
+                    {{ data[i][j] }}
+                {% endif %}
+            </td>
+            {% endfor %}
+            {% if session.get('table-DELETE') %}            
+            <td style="color: #00000000;">
+                <a href="#" onclick="confirmDelete(this)">
+                    <img src="/static/Image/trash.png" width="auto" height="25px" alt="trash">
+                </a>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        {% if session.get('table-INSERT') %}
+        <tr>
+            <form action="/library/{{view}}/append" method="POST">
+                {% for column in columns %}
+                <td><input name={{column}} required placeholder={{column}} autocomplete="off"></td>
+                {% endfor %}
+                <td>
+                    <button class="change-icon">
+                        <img src="/static/Image/append.png" width="auto" height="25px" alt="append">
+                    </button>
+                </td>
+            </form>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+<script>
+    function confirmDelete(element) {
+        if (confirm("Хотите удалить запись?")) {
+            let rowId = element.parentNode.parentNode.dataset.rowId;
+            deleteRow(rowId, element);
+        }
+    }
+
+    function deleteRow(rowId, element) {
+        fetch(`/library/${rowId}`, {
+            method: 'DELETE',
+        })
+        .then(response => {
+            if (response.ok) {
+                element.parentNode.parentNode.remove(); 
+            } else {
+                alert("Ошибка удаления.");
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+        });
+    }
+
+    function confirmUpdate(element) {
+        if (confirm("Хотите изменить запись?")) {
+            var id = element.parentNode.parentNode.dataset.rowId;
+            var column = element.parentNode.dataset.rowId;
+            var value = element.input1.value;
+            updataRow(id, column, value);
+        }
+    }
+
+    function updataRow(rowId, column, value) {
+        fetch(`/library/${rowId}.${column}.${value}`, {
+            method: 'UPDATE',
+        })
+        .then(response => {
+            if (response.ok) {
+                alert("Успех.");
+            } else {
+                alert("Ошибка: " + response.status);
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+        });
+    }
+</script>
+{% endif %}
+{% endblock %}

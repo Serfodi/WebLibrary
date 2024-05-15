@@ -14,86 +14,133 @@
     box-sizing: border-box;
 }
 
-
 html, body {
     font-family: '-apple-system'; 
 }
+
+/*  header  */
+
+header {
+    background-color: #AAD1D9;
+    font-size: 22px;
+    font-weight: bold;
+    height: 54px;
+}
+
+header div {
+    display: flex;
+    padding-left: 25px;
+    height: 100%;
+}
+
+header div .item {
+    display: flex;
+    align-items: center;
+}
+
+.item a {
+    display: flex;
+    color: #2F6B83;
+    text-decoration: none;
+    align-items: center;
+    height: 30px;
+    border-radius: 8px;
+    padding: 2px 6px;
+}
+.item a:hover {
+    background-color: #8fb9c9;
+}
+
+/*  body  */
 
 body {
     width: 100%;
     height: 100%;
     background-color: #F2EAE0;
+    color: #796057;
 }
 
-/* input */
-
-input {
+input, button, textarea, hr {
     outline: none;
     border: none;
-}
-
-button {
-    outline: none!important;
-    border: none;
-    background: 0 0;
-}
-
-
-button, input {
     overflow: visible;
+    color: inherit;
+    background-color: #00000000;
 }
 
-button, input, optgroup, select, textarea {
-    margin: 0;
+button, input, textarea, thead th {
     font-family: inherit;
     font-size: inherit;
     line-height: inherit;
-}
-
-input {
-    display: block;
-    width: 100%;
-    background: #E6DBCE;
-}
-input::placeholder {
-    font-weight: bold;
-    color: #796057;
-    opacity: 50%;
-}
-
-.error {
-    font-family: initial;
-    color: #ED2727;
-    font-size: 16px;
-    line-height: 1.5;
-    padding-top: 12px;
-    text-align: left;
     font-weight: bold;
 }
 
-.secsess {
-    font-family: initial;
-    color: #22c53b;
-    font-size: 16px;
-    line-height: 1.5;
-    padding-top: 12px;
-    text-align: left;
-    font-weight: bold;
+input::placeholder, textarea::placeholder {
+    color: inherit;
+    opacity: 60%;
 }
 
-h3 {
-    font-size: 24px;
+h1, h2, h3, h4 {
+    text-transform: uppercase;
     text-align: center;
-    color: #796057;
+    width: 100%;
+    margin-bottom: 15px;
 }
 
-/* 
+h4 {
+    text-transform:lowercase;
+}
 
-- Таблица -------------------------------------------------------
+hr {
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1px;
+    background-color: #796057;
+    margin-top: 5px;
+}
 
-*/
+p {
+    color: #ED2727;
+}
 
-table, th, td {
+/*  main  */
+
+.main {
+    display: grid;
+    flex-wrap: wrap;
+    align-items: start;
+    margin: 30px;
+}
+
+.main div {
+    display: flex;
+    justify-content: center;
+    flex-wrap: inherit;
+    margin: 10px;
+}
+
+.main button, input, textarea {
+    border-radius: 20px;
+    padding: 15px;
+    margin: 5px;
+    width: 100%;
+    height: auto;
+}
+
+.main button {
+    text-transform: uppercase;
+    color: #FBF8F6;
+    background: #F26A6C;
+}
+
+.main input, textarea {
+    color: inherit;
+    background: #FBF8F6;
+}
+
+/*  Таблица  */
+
+table, th, td, thead {
     border: none;
     table-layout: auto;
 }
@@ -104,46 +151,32 @@ table {
     padding: 40px;
     cursor: default;
 }
+
 table thead th {
     font-size: 20px;
 	font-weight: bold;
 	text-align: left;
-    color: #796057;
 	padding: 15px 20px;
-	background: #E0D1C1;
+	background: #E0D1C1; 
 }
-table thead tr th:first-child {
-	border-radius: 15px 0 0 15px;
-}
-table thead tr th:last-child {
-	border-radius: 0 15px 15px 0;
-}
+
 table tbody td {
-    font-size: 18px;
-    line-height: 1.3;
-	text-align: left;
-    color: #796057;
 	padding: 10px 15px;
 	vertical-align: middle;
 }
 
-table tbody tr td input {
-    height: auto;
-    line-height: 1.3;
-    font-size: 18px;
-    padding: 0px;
-    background-color: #00000000;
-}
-
-
 table tbody tr:nth-child(even) {
-	background: #FAF7F4;
+	 background: #FBF8F6;
 }
-table tbody tr td:first-child {
-	border-radius: 15px 0 0 15px;
-}
-table tbody tr td:last-child {
+
+table tbody tr td:first-child, 
+table thead tr th:first-child  {
     white-space: nowrap;
     width: 1%;
+	border-radius: 15px 0 0 15px;
+}
+
+table tbody tr td:last-child, 
+table thead tr th:last-child {
 	border-radius: 0 15px 15px 0;
 }

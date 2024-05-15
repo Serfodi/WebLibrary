@@ -7,45 +7,11 @@
     <title>{% block title %} Библиотека {% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<style>
-  header {
-    background-color: #AAD1D9;
-  }
-  .top-bar {
-    display: flex;
-    width: 100%;
-    height: 54px;
-    padding-left: 25px;
-    padding-right: 25px;
-    align-items: center;
-    font-size: 22px;
-    font-weight: bold;
-    cursor: default;
-  }
-  .item {
-    display: flex;
-    align-items: center;
-  }
-  a {
-    display: flex;
-    color: #2F6B83;
-    text-decoration: none;
-    cursor: pointer;
-    align-items: center;
-    flex-shrink: 1;
-    white-space: nowrap;
-    height: 24px;
-    border-radius: 4px;
-    font-size: inherit;
-    line-height: 1.2;
-    min-width: 0px;
-    padding: 2px 6px;
-  }
-</style>
 <body>
   <header>
     <div class="top-bar">
       <div class="item">
+
         <a href="{{ url_for('login') }}">
           {% if session.get('role') %}
             {{session.get('role')}}

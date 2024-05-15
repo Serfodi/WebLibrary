@@ -2,33 +2,9 @@
 {% extends "base.html" %}
 {% block title %} Просмотр записей {% endblock %}
 {% block content %}
-<style>
-.change-icon {
-    cursor: pointer;
-    color: green;
-}
-.delete-icon {
-    cursor: pointer;
-    color: red;
-}
-table tbody tr:last-child {
-    background-color: #E0D1C1;
-}
-table tbody tr td:nth-last-child(-n + 2) {
-    border-radius: 0 15px 15px 0;
-}
-table tbody tr td:last-child {
-    white-space: nowrap;
-    width: 1%;
-	border-radius: 0 15px 15px 0;
-    background: #F2EAE0;
-    padding: 6px; 
-}
-</style>
+
 {% if error %}
-<div class="error">
-    <span> {{ error }} </span>
-</div>
+<p> {{ error }} </p>
 {% else %}
 <table>
     <thead>
@@ -39,45 +15,37 @@ table tbody tr td:last-child {
         </tr>
     </thead>
     <tbody>
-        {% for i in range(0, data|length) %}
-        <tr data-row-id="{{ data[i][0] }}">
-
-            {% for j in range(0, data[i]|length) %}
-            <td data-row-id="{{ j }}">
-                {% if session.get('table-UPDATE') %}      
-                <form onsubmit = "confirmUpdate(this); return false">
-                    <input name="input1" value="{{data[i][j]}}">
-                </form>
-                {% else %}
-                    {{ data[i][j] }}
-                {% endif %}
-            </td>
-            {% endfor %}
-            {% if session.get('table-DELETE') %}            
-            <td style="color: #00000000;">
-                <a href="#" onclick="confirmDelete(this)">
-                    <img src="/static/Image/trash.png" width="auto" height="25px" alt="trash">
-                </a>
-            </td>
-            {% endif %}
-        </tr>
-        {% endfor %}
-        {% if session.get('table-INSERT') %}
         <tr>
-            <form action="/library/{{view}}/append" method="POST">
+            <form action="/library/{{table}}/append" method="POST">
                 {% for column in columns %}
-                <td><input name={{column}} required placeholder={{column}} autocomplete="off"></td>
+                <td><input name={{column}} placeholder={{column}} autocomplete="off"></td>
                 {% endfor %}
                 <td>
-                    <button class="change-icon">
+                    <button>
                         <img src="/static/Image/append.png" width="auto" height="25px" alt="append">
                     </button>
                 </td>
             </form>
         </tr>
-        {% endif %}
+        {% for i in range(0, data|length) %}
+        <tr data-row-id="{{ data[i][0] }}">
+            {% for j in range(0, data[i]|length) %}
+            <td data-row-id="{{ j }}">  
+                <form onsubmit = "confirmUpdate(this); return false">
+                    <input name="input1" value="{{data[i][j]}}">
+                </form>
+            </td>
+            {% endfor %}     
+            <td>
+                <a href="#" onclick="confirmDelete(this)">
+                    <img src="/static/Image/trash.png" width="auto" height="25px" alt="trash">
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
     </tbody>
 </table>
+
 <script>
     function confirmDelete(element) {
         if (confirm("Хотите удалить запись?")) {
@@ -127,5 +95,6 @@ table tbody tr td:last-child {
         });
     }
 </script>
+
 {% endif %}
 {% endblock %}

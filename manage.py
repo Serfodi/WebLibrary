@@ -6,6 +6,7 @@ app = Flask(__name__)
 app.secret_key = 'admin'
 
 
+
 @app.route("/")
 def root():
     if session.get('role'):
@@ -13,9 +14,7 @@ def root():
     return redirect(url_for("login"))
 
 
-"""
-- Login / Logout -
-"""
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method != "POST":
@@ -25,115 +24,78 @@ def login():
     password = request.form["password"]
     DB_User(username, password)
 
-    @Provider.perform
-    def current_user(cur):
-        cur.execute("SELECT * FROM current_user")
-
     try:
-        current_user()
+        Provider.perform(lambda cur: cur.execute("SELECT * FROM current_user"))
         if user := Users.raw(username):
-            session["role"] = user.value
+            session["role"] = user.name
             return redirect(url_for("library"))
-            
-        return render_template("login.html", error = "Незарегистрированный пользователь: %s" % (user_name))
-    except Exception as error:
-        print(error)
+        
+        return render_template("login.html", error = "Незарегистрированный пользователь: %s" % (username))
+    except:
         return render_template("login.html", error = "Ошибка доступа!")
 
 
 
 @app.route("/library")
 def library():
-    @Provider.perform
-    def sql(cur):
-        cur.execute("""
-        SELECT DISTINCT table_name
-          FROM information_schema.table_privileges as it
-         WHERE table_schema='public'
-	           AND it.privilege_type = 'SELECT'
-        """)
-        raw = cur.fetchall()
-        return [item[0] for item in raw]
-
-    try:
-        tables = sql()
-        user = session.get('role')
-        if user == Users.admin.value or user == Users.librarian.value:
-            return render_template("admin/library.html", value=tables, error=None)
-
-        return render_template("library.html", tables=tables, error=None)
-
-    except Exception as error:
-        return render_template("library.html", tables=None, error=error)
+    tables = ['book', 'periodical', 'libraries', 'udk', 'book_fund', 
+              'periodical_fund', 'read_room', 'reader', 'rent_book']
+    if session.get('role') == Users.admin.name:
+        return render_template("library.html", tables=tables)
+    return render_template("library.html", tables=tables[:4])
 
 
 
-@app.route("/library/<view>")
-def library_view(view):
+@app.route("/library/<table>")
+def library_view(table):
 
     @Provider.perform
     def select(cur):
-        cur.execute("SELECT * FROM %s" % (view))
+        cur.execute("SELECT * FROM %s" % (table))
         value = cur.fetchall()
         columns = [desc[0] for desc in cur.description]
         return value, columns
 
-    @Provider.perform
-    def privileges(cur):
-        cur.execute("""
-        SELECT DISTINCT privilege_type
-          FROM information_schema.table_privileges as it
-         WHERE table_schema='public'
-	           AND it.table_name  = '%s'""" % (view))
-        value = cur.fetchall()
-        return set(desc[0] for desc in value)
-
     try:
         data, columns = select()
-        privileges = privileges()
- 
-        session['table-name'] = view
+        session['table'] = table
         session['columns'] = columns
 
-        if session.get('role') == Users.reader.value :
-            return render_template("view.html", view=view, data=data, columns=columns, error=None)
-        return render_template("admin/view.html", view=view, data=data, columns=columns, error=None)
+        if session.get('role') == Users.reader.name :
+            return render_template("view.html", table=table, columns=columns, data=data, error=None)
+        
+        return render_template("admin/view.html", table=table, columns=columns, data=data, error=None)
     except Exception as error:
-        return render_template("view.html", view=None, data=None, columns=None, error=error)
+        return render_template("view.html", table=None, columns=None, data=None, error=error)
 
 
 
 @app.route("/library/<int:row_id>", methods=["DELETE"])
 def delete_row(row_id):
-    view = session.get('table-name')
-    columns = session.get('columns')
-
-    @Provider.perform
-    def delete(cur):
-        cur.execute("DELETE FROM %s WHERE %s = %s" % (view, columns[0], row_id))
-
+    table = session.get('table')
+    key = session.get('columns')[0]
     try:
-        delete()
-        return "Успешно удалено", 200
+        Provider.perform(lambda cur: 
+            cur.execute("DELETE FROM %s WHERE %s = %s" % (table, key, row_id)))
+        return "Успешно удалено.", 200
     except Exception as error:
         return "Ошибка удаления: %s", (error)
 
 
 
-# Добавление
-@app.route("/library/<view>/append", methods=["GET", "POST"])
-def append_row(view):
+@app.route("/library/<table>/append", methods=["GET", "POST"])
+def append_row(table):
     if request.method != "POST":
-        return redirect(url_for("library_view", view=view))
+        return redirect(url_for("library_view", table=table))
 
     value = []
     columns = session.get('columns')
 
     @Provider.perform
     def insert(cur):
-        parametr = lambda list: ', '.join(map(str, list))
+        parametr = lambda list: ','.join(map(str, list))
         try:
-            cur.execute("INSERT INTO %s (%s) values (%s)" % (view, parametr(columns), parametr(value)))
+            cur.execute("INSERT INTO %s (%s) values (%s)" % (table, parametr(columns), parametr(value)))
         except Exception as error:
             print(error)
 
@@ -142,7 +104,7 @@ def append_row(view):
             value.append(request.form[name])
         insert()
 
-        return redirect(url_for("library_view", view=view))
+        return redirect(url_for("library_view", table=table))
     except Exception as error:
          return "Ошибка добавления: %s", (error)
 
@@ -155,13 +117,13 @@ def sql():
 
     @Provider.perform
     def sql(cur):
-        query = request.form["query"]
-        cur.execute(query)
+        cur.execute(request.form["query"])
         value = cur.fetchall()
-        return value
+        columns = [desc[0] for desc in cur.description]
+        return value, columns
 
     try:
-        data = sql()
+        data, columns = sql()
         return render_template("admin/sql.html", data=data, error=None) 
     except Exception as error:
         return render_template("admin/sql.html", data=None, error=error)
@@ -170,14 +132,9 @@ def sql():
 
 @app.route("/library/<path:change>", methods=["UPDATE"])
 def change_row(change):
-
     id, column, value = change.split('.')
-    view = session.get('table-name')
+    table = session.get('table')
     columns = session.get('columns')
-
-    print(request.form)
-
-    #newValue = request.form['input1']
 
     @Provider.perform
     def insert(cur):
@@ -185,17 +142,11 @@ def change_row(change):
         UPDATE %s 
            SET %s = '%s'
          WHERE %s = %s;
-        """ % (view, columns[int(column)], value, columns[0], id))
-
-    print("""
-        UPDATE %s 
-           SET %s = '%s'
-         WHERE %s = %s;
-        """ % (view, columns[int(column)], value, columns[0], id))
+        """ % (table, columns[int(column)], value, columns[0], id))
 
     try:
         insert()
-        return "Успешно изменино", 200
+        return "Успешно изменино.", 200
     except Exception as error:
         return "Ошибка изменения: %s" % (error)
 

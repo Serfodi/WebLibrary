@@ -84,19 +84,27 @@ h1, h2, h3, h4 {
     text-transform: uppercase;
     text-align: center;
     width: 100%;
-    margin-bottom: 15px;
+    margin: 10px;
+}
+
+h1 {
+    width: 100%;
+    margin: 30px;
 }
 
 h4 {
+    margin: 0px;
+    text-align: center;
     text-transform:lowercase;
 }
 
 hr {
     margin-left: auto;
     margin-right: auto;
-    padding: 1px;
+    padding: 1.2px;
     background-color: #796057;
     margin-top: 5px;
+    margin-bottom: 10px;
 }
 
 p {
@@ -110,12 +118,19 @@ p {
     flex-wrap: wrap;
     align-items: start;
     margin: 30px;
+    justify-content: center;
 }
 
 .main div {
     display: flex;
     justify-content: center;
     flex-wrap: inherit;
+    margin: 5px auto;
+    max-width: 750px;
+
+}
+
+.main a {
     margin: 10px;
 }
 
@@ -178,5 +193,41 @@ table thead tr th:first-child  {
 
 table tbody tr td:last-child, 
 table thead tr th:last-child {
-	border-radius: 0 15px 15px 0;
+    border-radius: 0 15px 15px 0;
 }
+
+/* quote */
+
+.quote {
+    position: relative;
+    max-height: 300px;
+    max-width: 500px;
+    color: inherit;
+}
+
+  .quote::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+
+  blockquote::before {
+    content: "“";
+    position: absolute;
+    left: 1px;
+    top: -30px;
+    font-size: 50px;
+  }
+  
+  blockquote {
+    min-width: 500px;
+    padding-left: 30px;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 2;
+    font-weight: bold;
+  }
+
+  cite {
+    text-align: right;
+  }

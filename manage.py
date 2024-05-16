@@ -1,10 +1,11 @@
 from flask import Flask, render_template, redirect, flash, url_for, request, session, send_from_directory
 from db_connection import Users, DB_User, Provider
 from report_gen import create_rent_doc, create_service_doc, create_claim_doc
+from flask_cors import cross_origin
+import requests
 
 app = Flask(__name__)
 app.secret_key = 'admin'
-
 
 
 @app.route("/")
@@ -35,14 +36,24 @@ def login():
         return render_template("login.html", error = "Ошибка доступа!")
 
 
-
-@app.route("/library")
+@app.route("/library", methods=["GET", "POST"])
+@cross_origin(origins=['https://api.forismatic.com'])
 def library():
+
+    url = "https://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=ru"
+    response = requests.get(url)
+    data = response.json()
+
+    quote = data['quoteText']
+    author = data['quoteAuthor']
+
     tables = ['book', 'periodical', 'libraries', 'udk', 'book_fund', 
               'periodical_fund', 'read_room', 'reader', 'rent_book']
+    
     if session.get('role') == Users.admin.name:
-        return render_template("library.html", tables=tables)
-    return render_template("library.html", tables=tables[:4])
+        return render_template("library.html", tables=tables, quote=quote, author=author)
+    
+    return render_template("library.html", tables=tables[:4], quote=quote, author=author)
 
 
 

@@ -7,6 +7,10 @@
 {% else %}
 <div class='main'>
     <h2> библиотека </h2>
+    <div class="quote" name="quote" style="display: grid;">
+        <blockquote id="quote">{{quote}}</blockquote>
+        <cite id="author">{{ author }}</cite>
+    </div>
     {% if session.get('role') == 'admin' %}
     <h3> инструменты </h3>
     <hr style="width: 240px;"></hr>

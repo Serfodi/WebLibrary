@@ -3,8 +3,8 @@ import enum
 
 DB_HOST = 'localhost'
 DB_NAME = 'postgres'
-DB_User_Name = 'reader'
-DB_User_Password = '12345'
+DB_User_Name = 'admin'
+DB_User_Password = '549632'
 
 def DB_User(name, password):
     global DB_User_Name

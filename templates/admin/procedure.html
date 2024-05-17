@@ -1,0 +1,18 @@
+<!-- templates/admin_sql.html -->
+{% extends "base.html" %}
+{% block title %}Процедуры{% endblock %}
+{% block content %}
+<div class="main" style="justify-content:unset;">
+  <h3>Процедуры</h3>
+
+  {% for procedure in procedurs %}
+  <div>
+    <form action="{{ url_for(procedure) }}" method="POST">
+      <input type="text" name="book">
+      <input type="text" name="library">
+      <button>procedure</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

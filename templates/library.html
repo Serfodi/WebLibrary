@@ -11,20 +11,17 @@
         <blockquote id="quote">{{quote}}</blockquote>
         <cite id="author">{{ author }}</cite>
     </div>
-    {% if session.get('role') == 'admin' %}
+    {% if tools %}
     <h3> инструменты </h3>
     <hr style="width: 240px;"></hr>
     <div>
+        {% for tool in tools %}
         <div>
-            <a href="{{ url_for('sql') }}">
-                <img src="static/Image/SQLButton.png" width="110px">
+            <a href="{{ url_for(tool) }}">
+                <img src="static/Image/{{tool}}.png" width="110px">
             </a>
         </div>
-        <div>
-            <a href="{{ url_for('sql') }}">
-                <img src="static/Image/DocButton.png"  width="110px">
-            </a>
-        </div>
+        {% endfor %}
     </div>
     {% endif %}
     <h3> таблицы для просмотра </h3>

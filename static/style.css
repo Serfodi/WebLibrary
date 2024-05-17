@@ -131,7 +131,7 @@ p {
 }
 
 .main a {
-    margin: 10px;
+    margin: 10px 20px;
 }
 
 .main button, input, textarea {
@@ -196,6 +196,10 @@ table thead tr th:last-child {
     border-radius: 0 15px 15px 0;
 }
 
+table input {
+    padding: 0;
+}
+
 /* quote */
 
 .quote {
@@ -205,29 +209,48 @@ table thead tr th:last-child {
     color: inherit;
 }
 
-  .quote::after {
+.quote::after {
     content: "";
     clear: both;
     display: table;
-  }
+}
 
-  blockquote::before {
+blockquote::before {
     content: "“";
     position: absolute;
     left: 1px;
     top: -30px;
     font-size: 50px;
-  }
-  
-  blockquote {
+}
+
+blockquote {
     min-width: 500px;
     padding-left: 30px;
     font-family: inherit;
     font-size: inherit;
     line-height: 2;
     font-weight: bold;
-  }
+}
 
-  cite {
+cite {
+    font-family: inherit;
     text-align: right;
-  }
+}
+
+/* свои */
+
+div [type='text'] {
+    background-color: #FBF8F6;
+    align-items:center;
+    float: left;
+    min-width: 500px;
+    height: 50px;
+    border-radius: 25px;
+    padding: 0 30px;
+    margin: 0;
+    margin-right: 10px;
+}
+
+div [type='text'] a {
+    margin: 0;
+}

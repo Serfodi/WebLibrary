@@ -1,0 +1,19 @@
+<!-- templates/library.html -->
+{% extends "base.html" %}
+{% block title %} library {% endblock %}
+{% block content %}
+<div class='main'>
+    <h2> Экспорт в json </h2>
+    <hr style="width: 600px;"></hr>
+    <div>
+        {% for table in tables %}
+        <div style="display: grid;">
+            <a href="/library/json/{{ table }}">
+                <img src="/static/Image/TableButton.png" width="110px">
+            </a>
+            <h4> {{ table }} </h4>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

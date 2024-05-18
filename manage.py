@@ -1,6 +1,9 @@
 from flask import Flask, render_template, redirect, flash, url_for, request, session, send_from_directory, send_file
 from flask_cors import cross_origin
+#
+import datetime
 import requests
+import json
 #
 from db_connection import Users, DB_User, Provider
 from report_doc import render_docx_template
@@ -9,12 +12,17 @@ from report_doc import render_docx_template
 app = Flask(__name__)
 app.secret_key = 'admin'
 
+TABLES = ['book', 'periodical', 'libraries', 'udk', 'book_fund', 
+          'periodical_fund', 'read_room', 'reader', 'rent_book']
+TOOLS = ['sql', 'procedure', 'doc', 'export_json']
+PROCEDURS = []
 
 @app.route("/")
 def root():
     if session.get('role'):
         return redirect(url_for("library"))
     return redirect(url_for("login"))
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -35,6 +43,7 @@ def login():
     except:
         return render_template("login.html", error = "Ошибка доступа!")
 
+
 @app.route("/library", methods=["GET", "POST"])
 @cross_origin(origins=['https://api.forismatic.com'])
 def library():
@@ -44,15 +53,11 @@ def library():
     data = response.json()
     quote = data['quoteText']
     author = data['quoteAuthor']
-
-    tables = ['book', 'periodical', 'libraries', 'udk', 'book_fund', 
-              'periodical_fund', 'read_room', 'reader', 'rent_book']
     
     if session.get('role') == Users.admin.name:
-        tools = ['sql', 'procedure', 'doc']
-        return render_template("library.html", tools=tools, tables=tables, quote=quote, author=author)
-    
-    return render_template("library.html", tools=[], tables=tables[:4], quote=quote, author=author)
+        return render_template("library.html", tools=TOOLS, tables=TABLES, quote=quote, author=author)
+    return render_template("library.html", tools=[], tables=TABLES[:4], quote=quote, author=author)
+
 
 @app.route("/library/<table>")
 def library_view(table):
@@ -76,6 +81,7 @@ def library_view(table):
     except Exception as error:
         return render_template("view.html", table=None, columns=None, data=None, error=error)
 
+
 @app.route("/library/<int:row_id>", methods=["DELETE"])
 def delete_row(row_id):
     table = session.get('table')
@@ -86,6 +92,7 @@ def delete_row(row_id):
         return "Успешно удалено.", 200
     except Exception as error:
         return "Ошибка удаления: %s", (error)
+
 
 @app.route("/library/<table>/append", methods=["GET", "POST"])
 def append_row(table):
@@ -136,6 +143,7 @@ def change_row(change):
     except Exception as error:
         return "Ошибка изменения: %s" % (error)
 
+
 @app.route("/library/sql", methods=["GET", "POST"])
 def sql():
     if request.method != "POST":
@@ -155,11 +163,10 @@ def sql():
         return render_template("admin/sql.html", data=None, error=error)
 
 
-# здесь будет много шаблонов для галочки
-
 @app.route("/library/procedure", methods=["GET", "POST"])
 def procedure():
-    return render_template('admin/procedure.html', procedurs=[])
+    return render_template('admin/procedure.html', procedurs=PROCEDURS)
+
 
 @app.route("/library/procedure/is_empty_book", methods=["POST"])
 def is_empty_book():
@@ -180,12 +187,10 @@ def is_empty_book():
         return "Ошибка: %s" % (error) 
 
 
-
 @app.route("/library/doc", methods=["GET", "POST"])
 def doc():
-    docxs = ['reminder', 'restoration_book']
+    docxs = ['reminder', 'restoration_book', 'books_udk']
     return render_template('admin/doc.html', docxs=docxs)
-
 
 
 @app.route("/library/doc/<docx>", methods=["GET", "POST"])
@@ -200,12 +205,42 @@ def docx(docx):
 
     try:
         columns, value = select()
+        grafs()
         doc = render_docx_template(docx, columns, value)
         return send_file(doc, as_attachment=False)
     except Exception as error:
         print(error)
         return redirect(url_for("doc"))
 
+
+@app.route("/library/json", methods=["GET", "POST"])
+def export_json():
+    return render_template("admin/export_json.html", tables=TABLES)
+
+
+@cross_origin(origins=['http://127.0.0.1:5000'])
+@app.route("/library/json/<table>", methods=["GET", "POST"])
+def export_json_table(table):
+    
+    @Provider.perform
+    def select(cur):
+        cur.execute("SELECT * FROM %s" % (table))
+        value = cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        return value, columns
+    
+    def convert_date(obj):
+        if isinstance(obj, datetime.date):
+            return obj.isoformat()
+        raise TypeError("Type not serializable")
+
+    try:
+        data, keys = select()
+        dict_data = [dict(zip(keys, item)) for item in data]
+        json_data = json.dumps(dict_data, default=convert_date, ensure_ascii=False, indent=4)
+        return json_data
+    except Exception as erro:
+        return 'Ошибка: %s' % erro
 
 
 if __name__ == "__main__":

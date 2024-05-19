@@ -3,15 +3,15 @@
 {% block title %}Выходные документы{% endblock %}
 {% block content %}
 <div class="main" style="justify-content:unset;">
-  <h3>Выходные документы</h3>
+  <h2>Выходные документы</h2>
   {% for docx in docxs %}
   <div>
-    <div type="text">
-      <b style="text-align: left; width: 100%;">{{ docx }}</b>
+    <div type="textBlock">
+      <b>{{ docx }}</b>
+      <a href="{{ url_for('docx', docx=docx) }}" style="margin: 5px;">
+        <img src="/static/Image/load.png" width="40px">
+      </a>
     </div>
-    <a href="{{ url_for('docx', docx=docx) }}" style="margin: 0;">
-      <img src="/static/Image/load.png" width="50px">
-    </a>
   </div>
   {% endfor %}
 </div>

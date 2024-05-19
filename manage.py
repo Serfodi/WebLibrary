@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, flash, url_for, request, session, send_from_directory, send_file
+from flask import Flask, render_template, redirect, flash, url_for, request, session, send_from_directory, send_file, flash, get_flashed_messages
 from flask_cors import cross_origin
 #
 import datetime
@@ -15,7 +15,6 @@ app.secret_key = 'admin'
 TABLES = ['book', 'periodical', 'libraries', 'udk', 'book_fund', 
           'periodical_fund', 'read_room', 'reader', 'rent_book']
 TOOLS = ['sql', 'procedure', 'doc', 'export_json']
-PROCEDURS = []
 
 @app.route("/")
 def root():
@@ -101,6 +100,10 @@ def append_row(table):
 
     values = []
     columns = []
+    for item, value in request.form.items():
+        if value:
+            values.append(value)
+            columns.append(item)
 
     @Provider.perform
     def insert(cur):
@@ -108,19 +111,12 @@ def append_row(table):
         try:
             cur.execute("INSERT INTO %s (%s) values (%s)" % (table, parametr(columns), parametr(values)))
         except Exception as error:
-            print(error)
+            print(type(error))
+            return "Ошибка: %s" % (error)
 
-    try:
-        for item, value in request.form.items():
-            if value:
-                values.append(value)
-                columns.append(item)
-        insert()
-
-        return redirect(url_for("library_view", table=table))
-    except Exception as error:
-         print(error)
-         return "Ошибка добавления: %s", (error)
+    respons = insert()
+    flash(respons if respons else 'Запись дабавлена.')
+    return redirect(url_for("library_view", table=table))
 
 
 @app.route("/library/<path:change>", methods=["UPDATE"])
@@ -158,39 +154,43 @@ def sql():
 
     try:
         data, columns = sql()
-        return render_template("admin/sql.html", data=data, error=None) 
+        return render_template("admin/sql.html", data=data, columns=columns,  error=None) 
     except Exception as error:
-        return render_template("admin/sql.html", data=None, error=error)
+        return render_template("admin/sql.html", data=None, columns=None, error=error)
 
 
 @app.route("/library/procedure", methods=["GET", "POST"])
 def procedure():
-    return render_template('admin/procedure.html', procedurs=PROCEDURS)
+    procedures = [('add_book', ['library', 'book', 'count']),
+                  ('return_book', ['reade_card', 'book', 'rent_state'])]
+    return render_template('admin/procedure.html', procedurs=procedures)
 
 
-@app.route("/library/procedure/is_empty_book", methods=["POST"])
-def is_empty_book():
-    
-    book = request.form['book']
-    library = request.form['library']
-    
+@app.route("/library/procedure/<func>", methods=["GET", "POST"])
+def is_empty_book(func):
+     
+    values = []
+    for item, value in request.form.items():
+        if value:
+            values.append(value)
+
     @Provider.perform
     def procedure(cur):
-        cur.execute('CALL is_empty_book(%s, %s)' % (book, library))
-        return cur.fetchone()
+        parametr = ','.join(map(str, values))
+        try:
+            cur.execute('CALL %s(%s)' % (func, parametr))
+            return cur.fetchone()
+        except Exception as error:
+            return "Ошибка: %s" % (error)
 
-    try:
-        response = procedure()
-
-        return response
-    except Exception as error:
-        return "Ошибка: %s" % (error) 
+    flash(procedure())
+    return redirect(url_for('procedure'))
 
 
 @app.route("/library/doc", methods=["GET", "POST"])
 def doc():
-    docxs = ['reminder', 'restoration_book', 'books_udk']
-    return render_template('admin/doc.html', docxs=docxs)
+    docx = ['reminder', 'restoration_book', 'books_udk', 'debtors']
+    return render_template('admin/doc.html', docxs=docx)
 
 
 @app.route("/library/doc/<docx>", methods=["GET", "POST"])
@@ -205,7 +205,6 @@ def docx(docx):
 
     try:
         columns, value = select()
-        grafs()
         doc = render_docx_template(docx, columns, value)
         return send_file(doc, as_attachment=False)
     except Exception as error:

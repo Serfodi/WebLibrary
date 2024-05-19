@@ -3,7 +3,7 @@
 {% block title %}SQL запрос{% endblock %}
 {% block content %}
 <div class="main" style="justify-content:unset;">
-  <h3>Выполнение SQL запроса</h3>
+  <h2>Выполнение SQL запроса</h2>
   <form action="{{ url_for('sql') }}" method="POST">
     <div>
       <textarea name="query" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight +'px';" placeholder="Напишите запрос сюда…"></textarea>
@@ -12,21 +12,28 @@
       <button> Выполнить запрос </button>
     </div>
   </form>
-  <div>
-    {% if data %}
-      <h3>вывод</h3>
-      <table>
-        {% for row in data %}
-          <tr>
-            {% for value in row %}
-              <td>{{ value }}</td>
+  {% if data %}
+    <h3>вывод</h3>
+    <table>
+        <thead>
+            <tr>
+                {% for column in columns %}
+                <th> {{ column }} </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                {% for value in row %}
+                <td> {{value}} </td>
+                {% endfor %}            
+            </tr>
             {% endfor %}
-          </tr>
-        {% endfor %}
-      </table>
-    {% elif error %}
-    <p>{{ error }}</p>
-    {% endif %}
-  </div>
+        </tbody>
+    </table>
+  {% elif error %}
+  <p>{{ error }}</p>
+  {% endif %}
 </div>
 {% endblock %}

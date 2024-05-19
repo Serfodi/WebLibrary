@@ -68,7 +68,7 @@ input, button, textarea, hr {
     background-color: #00000000;
 }
 
-button, input, textarea, thead th {
+button, input, textarea, thead th, p {
     font-family: inherit;
     font-size: inherit;
     line-height: inherit;
@@ -88,8 +88,11 @@ h1, h2, h3, h4 {
 }
 
 h1 {
-    width: 100%;
-    margin: 30px;
+    margin: 30px 0;
+}
+
+h2 {
+    margin-bottom: 20px;
 }
 
 h4 {
@@ -109,6 +112,8 @@ hr {
 
 p {
     color: #ED2727;
+    margin-top: 15px;
+    text-align: center;
 }
 
 /*  main  */
@@ -127,7 +132,6 @@ p {
     flex-wrap: inherit;
     margin: 5px auto;
     max-width: 750px;
-
 }
 
 .main a {
@@ -151,6 +155,10 @@ p {
 .main input, textarea {
     color: inherit;
     background: #FBF8F6;
+}
+
+.main div form {
+    margin-bottom: 20px;
 }
 
 /*  Таблица  */
@@ -239,18 +247,13 @@ cite {
 
 /* свои */
 
-div [type='text'] {
+div [type='textBlock'] {
     background-color: #FBF8F6;
-    align-items:center;
-    float: left;
+    justify-content:space-between;
+    vertical-align: middle;
+    align-items: center;
     min-width: 500px;
     height: 50px;
     border-radius: 25px;
-    padding: 0 30px;
-    margin: 0;
-    margin-right: 10px;
-}
-
-div [type='text'] a {
-    margin: 0;
+    padding-left: 30px;
 }

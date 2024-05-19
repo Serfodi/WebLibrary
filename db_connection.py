@@ -45,3 +45,15 @@ class Provider:
             connect.close()
             return value
         return context
+    
+
+    """
+    try:
+                value = block(cur)
+            except Exception as error:
+                print(type(error))
+                return 'Ошибка: %s' % (error)
+            finally:
+                cur.close()
+                connect.close()
+    """

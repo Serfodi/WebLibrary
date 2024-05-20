@@ -9,9 +9,8 @@
 </head>
 <body>
   <header>
-    <div class="top-bar">
+    <div class="topbar">
       <div class="item">
-
         <a href="{{ url_for('login') }}">
           {% if session.get('role') %}
             {{session.get('role')}}
@@ -31,6 +30,17 @@
         {% endwith %}
       </div>
     </div>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="flashBar">
+      <div class="item"> 
+        {% for message in messages %}
+        <b> {{ message }} </b> 
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endwith %}
   </header>
   {% block content %}
   {% endblock %}

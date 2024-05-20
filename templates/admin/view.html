@@ -2,16 +2,6 @@
 {% extends "base.html" %}
 {% block title %} Просмотр записей {% endblock %}
 {% block content %}
-{% if error %}
-<p> {{ error }} </p>
-{% else %}
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-   {% for message in messages %}
-      <p>  {{ message }} </p>
-   {% endfor %}
-{% endif %}
-{% endwith %}
 <table>
     <thead>
         <tr>
@@ -38,7 +28,7 @@
             {% for j in range(0, data[i]|length) %}
             <td data-row-id="{{ j }}">  
                 <form onsubmit = "confirmUpdate(this); return false">
-                    <input name="input1" value="{{data[i][j]}}">
+                    <input id="input1" name="input" value="{{data[i][j]}}">
                 </form>
             </td>
             {% endfor %}     
@@ -51,7 +41,6 @@
         {% endfor %}
     </tbody>
 </table>
-
 <script>
     function confirmDelete(element) {
         if (confirm("Хотите удалить запись?")) {
@@ -76,6 +65,7 @@
         });
     }
 
+
     function confirmUpdate(element) {
         if (confirm("Хотите изменить запись?")) {
             var id = element.parentNode.parentNode.dataset.rowId;
@@ -85,21 +75,26 @@
         }
     }
 
+    var inputField;
+    var oldValue;
+    input1.onfocus = function() {
+        inputField = this
+        oldValue = inputField.value;
+    };
+
     function updataRow(rowId, column, value) {
-        fetch(`/library/${rowId}.${column}.${value}`, {
-            method: 'UPDATE',
+        fetch(`/library/${rowId}|${column}|${value}`, {
+            method: 'POST',
         })
         .then(response => {
-            if (response.ok) {
-                alert("Успех.");
-            } else {
-                alert("Ошибка: " + response.status);
-            }
+            return response.text();
         })
+        .then(data => {
+            alert(data);
+         })
         .catch(error => {
-            console.error('Ошибка:', error);
+            console.error('Catch:', error);
         });
     }
 </script>
-{% endif %}
 {% endblock %}

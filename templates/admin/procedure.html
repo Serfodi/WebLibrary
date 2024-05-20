@@ -2,30 +2,20 @@
 {% extends "base.html" %}
 {% block title %}Процедуры{% endblock %}
 {% block content %}
-
 <div class="main" style="justify-content:unset;">
   <h2>Процедуры</h2>
-
-  {% with messages = get_flashed_messages() %}
-  {% if messages %}
-  <h3> Результат </h3>
-  {% for message in messages %}
-  <div> <b> {{ message }} </b> </div>
-  {% endfor %}
-  {% endif %}
-  {% endwith %}
-
-  {% for procedure in procedurs %}
   <div>
-    <form action="/library/procedure/{{ procedure[0] }}" method="POST">
-      <h3> {{ procedure[0] }} </h3>
-      {% for item in procedure[1] %}
-      <input name="{{ item }}" placeholder='{{ item }}'>
-      {% endfor %}
-      <button> Выполнить </button>
-    </form>
+    {% for procedure in procedurs %}
+    <div style="width: 40%;">
+      <form action="/library/procedure/{{ procedure[0] }}" method="POST">
+        <h3> {{ procedure[0] }} </h3>
+        {% for item in procedure[1] %}
+        <input name="{{ item }}" placeholder='{{ item }}'>
+        {% endfor %}
+        <button> Выполнить </button>
+      </form>
+    </div>
+    {% endfor %}
   </div>
-  {% endfor %}
-
 </div>
 {% endblock %}

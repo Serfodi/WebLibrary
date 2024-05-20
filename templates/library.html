@@ -2,9 +2,6 @@
 {% extends "base.html" %}
 {% block title %} library {% endblock %}
 {% block content %}
-{% if error %}
-<p> {{ error }} </p>
-{% else %}
 <div class='main'>
     <h2> библиотека </h2>
     <div class="quote" name="quote" style="display: grid;">
@@ -13,7 +10,7 @@
     </div>
     {% if tools %}
     <h3> инструменты </h3>
-    <hr style="width: 240px;"></hr>
+    <hr style="width: 500px;"></hr>
     <div>
         {% for tool in tools %}
         <div>
@@ -25,7 +22,7 @@
     </div>
     {% endif %}
     <h3> таблицы для просмотра </h3>
-    <hr style="width: 600px;"></hr>
+    <hr style="width: 500px;"></hr>
     <div>
         {% for table in tables %}
         <div style="display: grid;">
@@ -37,5 +34,4 @@
         {% endfor %}
     </div>
 </div>
-{% endif %}
 {% endblock %}

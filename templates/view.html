@@ -2,9 +2,6 @@
 {% extends "base.html" %}
 {% block title %} Просмотр записей {% endblock %}
 {% block content %}
-{% if error %}
-<p> {{ error }} </p>
-{% else %}
 <table>
     <thead>
         <tr>
@@ -23,5 +20,4 @@
         {% endfor %}
     </tbody>
 </table>
-{% endif %}
 {% endblock %}

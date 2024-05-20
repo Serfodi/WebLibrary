@@ -17,13 +17,13 @@
     <table>
         <thead>
             <tr>
-                {% for column in columns %}
+                {% for column in data[1] %}
                 <th> {{ column }} </th>
                 {% endfor %}
             </tr>
         </thead>
         <tbody>
-            {% for row in data %}
+            {% for row in data[0] %}
             <tr>
                 {% for value in row %}
                 <td> {{value}} </td>
@@ -32,8 +32,6 @@
             {% endfor %}
         </tbody>
     </table>
-  {% elif error %}
-  <p>{{ error }}</p>
   {% endif %}
 </div>
 {% endblock %}

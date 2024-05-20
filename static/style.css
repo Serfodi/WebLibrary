@@ -21,10 +21,8 @@ html, body {
 /*  header  */
 
 header {
-    background-color: #AAD1D9;
-    font-size: 22px;
-    font-weight: bold;
-    height: 54px;
+    display: grid;
+    height: auto;
 }
 
 header div {
@@ -36,6 +34,21 @@ header div {
 header div .item {
     display: flex;
     align-items: center;
+}
+
+.topbar {
+    background-color: #AAD1D9;
+    font-size: 22px;
+    font-weight: bold;
+    height: 50px;
+}
+
+.flashBar {
+    background-color: #F26A6C;
+    color: #FBF8F6;
+    font-size: 16px;
+    height: auto;
+    padding: 5px 0;
 }
 
 .item a {

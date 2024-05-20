@@ -46,14 +46,20 @@ class Provider:
             return value
         return context
     
-
-    """
-    try:
+    @staticmethod
+    def perform_try(block):
+        def context():
+            connect = Provider.connection()
+            cur = connect.cursor()
+            try:
                 value = block(cur)
             except Exception as error:
+                print(error)
                 print(type(error))
-                return 'Ошибка: %s' % (error)
-            finally:
-                cur.close()
-                connect.close()
-    """
+                if "no results to fetch" in str(error):
+                    return None, None
+                return None, 'Error: %s' % (error)
+            cur.close()
+            connect.close()
+            return value, None
+        return context

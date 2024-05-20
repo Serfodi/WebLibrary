@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, flash, url_for, request, session, send_from_directory, send_file, flash, get_flashed_messages
+from flask import Flask, render_template, redirect, flash, url_for, request, session, send_from_directory, send_file, flash, get_flashed_messages, make_response
 from flask_cors import cross_origin
 #
 import datetime
@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.secret_key = 'admin'
 
 TABLES = ['book', 'periodical', 'libraries', 'udk', 'book_fund', 
-          'periodical_fund', 'read_room', 'reader', 'rent_book']
+          'periodical_fund', 'read_room', 'reader', 'rent_book', 'test']
 TOOLS = ['sql', 'procedure', 'doc', 'export_json']
 
 @app.route("/")
@@ -38,9 +38,11 @@ def login():
             session["role"] = user.name
             return redirect(url_for("library"))
         
-        return render_template("login.html", error = "Незарегистрированный пользователь: %s" % (username))
+        flash("Незарегистрированный пользователь: %s" % (username))
+        return render_template("login.html")
     except:
-        return render_template("login.html", error = "Ошибка доступа!")
+        flash("Ошибка доступа!")
+        return render_template("login.html")
 
 
 @app.route("/library", methods=["GET", "POST"])
@@ -61,24 +63,25 @@ def library():
 @app.route("/library/<table>")
 def library_view(table):
 
-    @Provider.perform
+    @Provider.perform_try
     def select(cur):
-        cur.execute("SELECT * FROM %s" % (table))
+        cur.execute("SELECT * FROM %s ORDER BY 1" % (table))
         value = cur.fetchall()
         columns = [desc[0] for desc in cur.description]
         return value, columns
 
-    try:
-        data, columns = select()
-        session['table'] = table
-        session['columns'] = columns
+    value, error = select()
 
-        if session.get('role') == Users.reader.name :
-            return render_template("view.html", table=table, columns=columns, data=data, error=None)
-        
-        return render_template("admin/view.html", table=table, columns=columns, data=data, error=None)
-    except Exception as error:
-        return render_template("view.html", table=None, columns=None, data=None, error=error)
+    if error:
+        flash(error)
+        return render_template("view.html", table=None, columns=None, data=None)
+    
+    session['table'] = table
+    session['columns'] = value[1]
+
+    if session.get('role') == Users.reader.name :
+        return render_template("view.html", table=table, columns=value[1], data=value[0])
+    return render_template("admin/view.html", table=table, columns=value[1], data=value[0])
 
 
 @app.route("/library/<int:row_id>", methods=["DELETE"])
@@ -105,27 +108,23 @@ def append_row(table):
             values.append(value)
             columns.append(item)
 
-    @Provider.perform
+    @Provider.perform_try
     def insert(cur):
         parametr = lambda list: ','.join(map(str, list))
-        try:
-            cur.execute("INSERT INTO %s (%s) values (%s)" % (table, parametr(columns), parametr(values)))
-        except Exception as error:
-            print(type(error))
-            return "Ошибка: %s" % (error)
+        cur.execute("INSERT INTO %s (%s) values (%s)" % (table, parametr(columns), parametr(values)))
 
-    respons = insert()
-    flash(respons if respons else 'Запись дабавлена.')
+    _, error = insert()
+    flash(error if error else 'Запись дабавлена.')
     return redirect(url_for("library_view", table=table))
 
 
-@app.route("/library/<path:change>", methods=["UPDATE"])
+@app.route("/library/<path:change>", methods=["POST"])
 def change_row(change):
-    id, column, value = change.split('.')
+    id, column, value = change.split('|')
     table = session.get('table')
     columns = session.get('columns')
 
-    @Provider.perform
+    @Provider.perform_try
     def insert(cur):
         cur.execute("""
         UPDATE %s 
@@ -133,30 +132,28 @@ def change_row(change):
          WHERE %s = %s;
         """ % (table, columns[int(column)], value, columns[0], id))
 
-    try:
-        insert()
-        return "Успешно изменино.", 200
-    except Exception as error:
+    _, error = insert()
+    if error:
         return "Ошибка изменения: %s" % (error)
+    return "Успешно изменино.", 200
+
 
 
 @app.route("/library/sql", methods=["GET", "POST"])
 def sql():
     if request.method != "POST":
-        return render_template("admin/sql.html", data=None, error=None)
+        return render_template("admin/sql.html", data=None)
 
-    @Provider.perform
+    @Provider.perform_try
     def sql(cur):
         cur.execute(request.form["query"])
         value = cur.fetchall()
         columns = [desc[0] for desc in cur.description]
         return value, columns
 
-    try:
-        data, columns = sql()
-        return render_template("admin/sql.html", data=data, columns=columns,  error=None) 
-    except Exception as error:
-        return render_template("admin/sql.html", data=None, columns=None, error=error)
+    value, error = sql()
+    flash(error if error else 'Запрос выполнен.')
+    return render_template("admin/sql.html", data=value) 
 
 
 @app.route("/library/procedure", methods=["GET", "POST"])
@@ -168,48 +165,45 @@ def procedure():
 
 @app.route("/library/procedure/<func>", methods=["GET", "POST"])
 def is_empty_book(func):
-     
     values = []
     for item, value in request.form.items():
         if value:
             values.append(value)
 
-    @Provider.perform
+    parametr = ','.join(map(str, values))
+    @Provider.perform_try
     def procedure(cur):
-        parametr = ','.join(map(str, values))
-        try:
-            cur.execute('CALL %s(%s)' % (func, parametr))
-            return cur.fetchone()
-        except Exception as error:
-            return "Ошибка: %s" % (error)
+        cur.execute('CALL %s(%s)' % (func, parametr))
 
-    flash(procedure())
+    _, error = procedure()
+    flash(error if error else 'Процедура выполнена.')
     return redirect(url_for('procedure'))
 
 
 @app.route("/library/doc", methods=["GET", "POST"])
 def doc():
-    docx = ['reminder', 'restoration_book', 'books_udk', 'debtors']
+    docx = ['reminder', 'restoration_book', 'books_udk', 'debtors', 'fdfff']
     return render_template('admin/doc.html', docxs=docx)
 
 
 @app.route("/library/doc/<docx>", methods=["GET", "POST"])
 def docx(docx):
     
-    @Provider.perform
-    def select(cur):
+    @Provider.perform_try
+    def select_try(cur):
         cur.execute('SELECT * FROM %s()' % (docx))
         value = cur.fetchall()
         columns = [desc[0] for desc in cur.description]
         return columns, value
 
-    try:
-        columns, value = select()
-        doc = render_docx_template(docx, columns, value)
-        return send_file(doc, as_attachment=False)
-    except Exception as error:
-        print(error)
+    value, error = select_try()
+
+    if error:
+        flash(error)
         return redirect(url_for("doc"))
+
+    doc = render_docx_template(docx, value[0], value[1])
+    return send_file(doc, as_attachment=False)
 
 
 @app.route("/library/json", methods=["GET", "POST"])
@@ -217,11 +211,10 @@ def export_json():
     return render_template("admin/export_json.html", tables=TABLES)
 
 
-@cross_origin(origins=['http://127.0.0.1:5000'])
 @app.route("/library/json/<table>", methods=["GET", "POST"])
 def export_json_table(table):
     
-    @Provider.perform
+    @Provider.perform_try
     def select(cur):
         cur.execute("SELECT * FROM %s" % (table))
         value = cur.fetchall()
@@ -233,9 +226,11 @@ def export_json_table(table):
             return obj.isoformat()
         raise TypeError("Type not serializable")
 
+    value, error = select()
+    if error:
+        return error
     try:
-        data, keys = select()
-        dict_data = [dict(zip(keys, item)) for item in data]
+        dict_data = [dict(zip(value[1], item)) for item in value[0]]
         json_data = json.dumps(dict_data, default=convert_date, ensure_ascii=False, indent=4)
         return json_data
     except Exception as erro:

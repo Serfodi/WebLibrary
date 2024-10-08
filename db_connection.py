@@ -1,10 +1,11 @@
+
 import psycopg2
 import enum
 
-DB_HOST = 'localhost'
+DB_HOST = 'postgres'
 DB_NAME = 'postgres'
-DB_User_Name = 'admin'
-DB_User_Password = '549632'
+DB_User_Name = 'postgres'
+DB_User_Password = 'postgres'
 
 def DB_User(name, password):
     global DB_User_Name
@@ -15,6 +16,7 @@ def DB_User(name, password):
 class Users(enum.Enum):
     admin = 'admin'
     reader = 'reader'
+    postgres = 'postgres'
     
     @classmethod
     def raw(self, value):
@@ -26,6 +28,7 @@ class Users(enum.Enum):
 class Provider:
     @staticmethod
     def connection():
+        
         connect = psycopg2.connect(
             host = DB_HOST,
             database = DB_NAME,
@@ -54,7 +57,7 @@ class Provider:
             try:
                 value = block(cur)
             except Exception as error:
-                print(error)
+                print("Error db:",error)
                 print(type(error))
                 if "no results to fetch" in str(error):
                     return None, None

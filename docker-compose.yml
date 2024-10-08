@@ -1,0 +1,28 @@
+version: '3.9'
+
+services:  
+  flask_web:
+    container_name: web-library
+    build: .
+    depends_on:
+      - postgres
+    links:
+      - postgres
+    ports:
+      - 5001:5000
+    restart: unless-stopped
+
+  postgres:
+    container_name: postgres_library_container
+    image: postgres:16
+    env_file: ./.env-postgresql
+    ports:
+      - 5433:5432
+    volumes: 
+      - db:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    restart: unless-stopped
+
+volumes:
+  db:
+    driver: local
